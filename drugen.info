@@ -1,0 +1,5 @@
+name = drugen
+description = Gerador de usuários para Drupal.
+core = 7.x
+
+files[] = includes/password.inc
