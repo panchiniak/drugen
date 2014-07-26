@@ -49,6 +49,18 @@ class DrugenForm extends ConfigFormBase
             '#title' => t('Role'),
             '#description' => t('Set the role of the users. Leave it blank for using Authenticated user.'),
         );
+        
+        $form['drugen_role_select'] = array(
+            '#type' => 'select',
+            '#title' => t('Selected'),
+            '#options' => array(
+                0 => t('No'),
+                1 => t('Yes'),
+             ),
+            '#default_value' => $category['selected'],
+            '#description' => t('Set this to <em>Yes</em> if you would like this category to be selected by default.'),
+            '#multiple' => true,
+        );
 
         $form['drugen_size_password'] = array(
             '#type' => 'textfield',
