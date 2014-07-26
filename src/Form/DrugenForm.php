@@ -81,10 +81,23 @@ class DrugenForm extends ConfigFormBase
      */
     public function validateForm(array &$form, array &$form_state)
     {
+        $v = (bool)preg_match('/^\d+$/', $form_state['values']['drugen_user_quantity']);
 
-        /*if (strpos($form_state['values']['email'], '.com') === FALSE ) {
-            $this->setFormError('email', $form_state, $this->t('This is not a .com email address.'));
-        } */
+        if ($v == FALSE ) {
+            $this->setFormError('drugen_user_quantity', $form_state, $this->t('This is not a number in User quantity.'));
+        }
+
+        if ($form_state['values']['drugen_size_password'] == '')
+        {
+            $form_state['values']['drugen_size_password'] = 4;
+            return;
+        }
+
+        $v = (bool)preg_match('/^\d+$/', $form_state['values']['drugen_size_password']);
+
+        if ($v == FALSE ) {
+            $this->setFormError('drugen_size_password', $form_state, $this->t('This is not a number in Password\'s size.'));
+        }
     }
 
     /**
