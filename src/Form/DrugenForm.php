@@ -37,11 +37,24 @@ class DrugenForm extends ConfigFormBase
             '#title' => t('User name prefix'),
             '#description' => t('Type the prefix for user name (optional).'),
         );
-        
-         $form['submit'] = array(
-             '#type' => 'submit',
-             '#value' => $this->t('Generate users'),
-         );
+
+        $form['drugen_email_prefix'] = array(
+            '#type' => 'textfield',
+            '#title' => t('User email prefix'),
+            '#description' => t('Type the prefix for email user (optional).'),
+        );
+
+        $form['drugen_size_password'] = array(
+            '#type' => 'textfield',
+            '#title' => t("Password's size"),
+            '#description' => t('Define password length (optional).'),
+            '#default_value' => 4,
+        );
+
+        $form['submit'] = array(
+            '#type' => 'submit',
+            '#value' => $this->t('Generate users'),
+        );
 
         return $form;
     }
