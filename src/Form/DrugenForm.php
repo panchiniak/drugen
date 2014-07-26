@@ -32,16 +32,16 @@ class DrugenForm extends ConfigFormBase
             '#required' => true,
         );
 
-        $form['drugen_username_prefix'] = array(
+        $form['drugen_prefix'] = array(
             '#type' => 'textfield',
             '#title' => t('User name prefix'),
-            '#description' => t('Type the prefix for user name (optional).'),
+            '#description' => t('The user name will be generated with PrefixUid. Leave it blank for using UserUid.'),
         );
 
-        $form['drugen_email_prefix'] = array(
+        $form['drugen_domain'] = array(
             '#type' => 'textfield',
-            '#title' => t('User email prefix'),
-            '#description' => t('Type the prefix for email user (optional).'),
+            '#title' => t('Domain'),
+            '#description' => t('The mail address will be generated with PrefixUid@domain. Leave it blanck for using PrefixUid@domain.example'),
         );
 
         $form['drugen_size_password'] = array(
