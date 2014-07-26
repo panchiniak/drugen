@@ -101,16 +101,23 @@ class DrugenForm extends ConfigFormBase
         }
     }
     
+    
+//    public function submitForm(array &$form, array &$form_state) {
+//  drupal_set_message($this->t('Your phone number is @number', array('@number' => $form_state['values']['phone_number'])));
+//}
+    
     /**
      * {@inheritdoc}
      */
-    public function submitForm(array &$form, array &$form_state)
-    {
-        drupal_set_message(t('my darling'));
-        /*$lastId = $this->getLastUid();
+    public function submitForm(array &$form, array &$form_state) {
+        //drupal_set_message($this->t('Teste'));   
+        //drupal_set_message(t('my darling'));
+        $lastId = $this->getLastUid();
+        //var_dump($lastId);
+        drupal_set_message($this->t('Ultimo usuario' . $lastId));
         $user_quantity = $form_state['values']['drugen_user_quantity'];
         $prefix = ($form_state['values']['drugen_prefix']) ? $form_state['values']['drugen_prefix'] : 'User';
-        var_dump($form_state['values']['drugen_role']);exit;
+        drupal_set_message(print_r ($form_state['values']['drugen_role'], true));
         for ($i=1; $i <= $user_quantity; $i++) {
             $userName = $prefix . $lastId + $i;
             $user = entity_create('user', array(
@@ -120,8 +127,8 @@ class DrugenForm extends ConfigFormBase
               'pass' => user_password($form_state['values']['drugen_password_length']),
               'status' => 1,
             ));
-            $user->addRole();
-        }*/
+            //$user->addRole();
+        }
     }
 
 
@@ -135,7 +142,9 @@ class DrugenForm extends ConfigFormBase
             ->sort("uid", "desc")
             ->range(0, 1)
             ->execute();
-              
-        return $last_user;
+        
+        
+        
+        return array_shift($last_user);
     }
 }
