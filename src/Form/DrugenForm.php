@@ -128,18 +128,4 @@ class DrugenForm extends ConfigFormBase
       return $last_user;
     }
 
-    /**
-     * Create random string to password
-     * @param  integer $length Password length
-     * @return string          Random password
-     */
-    private function generateRandomString($length = 10) {
-        $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-        $randomString = '';
-        for ($i = 0; $i < $length; $i++) {
-            $randomString .= $characters[rand(0, strlen($characters) - 1)];
-        }
-        return $randomString;
-    }
-
 }
