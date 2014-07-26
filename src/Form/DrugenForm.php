@@ -64,7 +64,7 @@ class DrugenForm extends ConfigFormBase
         $form['drugen_size_password'] = array(
             '#type' => 'textfield',
             '#title' => t("Password's size"),
-            '#description' => t('Define password length (optional).'),
+            '#description' => t('Define password length. Leave it blank for using 4.'),
             '#default_value' => 4,
         );
 
