@@ -1,0 +1,4 @@
+name : drugen
+description : 'Drugen generates users for Drupal.'
+type: module
+core : 8.x

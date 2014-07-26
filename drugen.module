@@ -1,0 +1,379 @@
+<?php
+/**
+ * @file
+ * This is drugen.module for Drupal
+ */  
+define('drugen_VERSION', '7.x-1.x-dev');
+/**
+ * Implements hook_permission().
+ */
+function drugen_permission() {
+  return array(
+    'administer drugen' => array(
+      'title' => t('Administrar drugen'),
+      'description' => t('Configurações do drugen'),
+      'restrict access' => TRUE,
+    ),
+  );
+}
+/**
+ * Implements hook_help().
+ *
+ * Displays help and module information.
+ *
+ * @param string $path
+ *   Which path of the site we're using to display help
+ * @param string $arg
+ *   Array that holds the current path as returned from arg() function
+ *
+ * @return string
+ *   $items
+ */
+function drugen_help($path, $arg) {
+  switch ($path) {
+    case "admin/help#drugen":
+      return '<p>' . t('Gerador de usuários para o Drupal.') . '</p>';
+      break;
+  }
+}
+/**
+ * Implements hook_menu().
+ */
+function drugen_menu() {
+  $items['drugen'] = array(
+    'title' => 'Gerador Drugen',
+    'description' => t('Formulário para uso do Gerador drugen'),    
+    'page arguments' => array('drugen_form'),
+    'access arguments' => array('administer drugen'),
+    'type' => MENU_NORMAL_ITEM,
+    'page callback' => 'drupal_get_form',
+  );
+  return $items;
+}
+/**
+ * Implements hook_form().
+ *
+ * Form function, called by drupal_get_form()
+ * in tefiltro_menu().
+ */
+function drugen_form($form, &$form_state) {
+  $form['drugen_numerousuarios'] = array(
+    '#type' => 'textfield',
+    '#required' => TRUE,
+    '#title' => t('Quantidade de usuários.'),    
+    '#size' => 7,    
+  );
+  $form['drugen_prefixo'] = array(
+    '#type' => 'textfield',    
+    '#title' => t('Prefixo do nome do usuário.'),    
+    '#size' => 7,    
+    '#description' => t('O nome do usuário terá o formato PrefixoUid. Deixe en branco para utilizar UsuarioUid.'),    
+  );
+  $form['drugen_dominio'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Domínio'),    
+    '#size' => 7,    
+    '#description' => t('Os endereços terão o formato PrefixoUid@Domínio. Deixe em branco para utilizar PrefixoUID@coletivo28.org'),
+  );
+  $form['drugen_papel'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Papel'),    
+    '#size' => 7,    
+    '#description' => t('Determine as permissões dos usuários indicando o papel a que serão assinalados. Deixe em branco para utilizar usuário autenticado.'),
+  );
+  $form['drugen_nodeinicial'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Conteúdo Inicial'),    
+    '#size' => 7,    
+    '#description' => t('Defina o número do node inicial, que será atribuído a cada usuário criado. Deixe em branco para não estabelecer um conteúdo inicial.'),
+  );
+  $form['drugen_grupoinicial'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Grupo Inicial'),    
+    '#size' => 7,    
+    '#description' => t('Defina o número do grupo inicial (nid), que será replicado para cada usuário criado. Deixe em branco para não estabelecer um grupo inicial.'),
+  );
+  $form['drugen_grupomembro'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Membro Associado'),    
+    '#size' => 7,    
+    '#description' => t('Defina o nome de um membro para o grupo inicial. Deixe em branco para não acrescentar um membro ao grupo inicial.'),
+  );
+  $form['drugen_tamanhosenha'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Tamanho da senha'),    
+    '#size' => 7,    
+    '#description' => t('Defina o número de caractertes das senhas. Os nomes provisórios de usuários e as senhas serão armazenados no conteúdo Drugen. Deixe este campo em branco para usar senha com 4 caracteres.'),
+  );
+  $form['drugen_submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Gerar'),    
+  );
+  return $form;
+}
+/**
+ * Custom drugen function
+ *
+ * Retorna o último uid
+ *
+ */
+function drugen_lastuid() {
+  $query_drugen_lastuid = db_select('users', 'uid');
+  $result_drugen_lastuid = $query_drugen_lastuid
+    ->fields('uid', array('uid'))
+    ->orderBy('uid', 'DESC')
+    ->range(0,1)//LIMIT to 2 records
+    ->execute()
+    ->fetchAssoc();
+  return $result_drugen_lastuid;
+}
+/**
+ * Custom drugen function
+ *
+ * Recebe uid e replica o node selecionado para o usuário
+ */
+function drugen_replica($node,$uid){
+  $node->uid = $uid;
+  $node->nid = NULL;
+  $node->vid = NULL;  
+  node_save($node);  
+  $node_id = $node->nid;
+  return $node_id;
+}
+/**
+ * Custom drugen function
+ *
+ * Cria usuários, retorna 1 se a criação foi bem sucedida.
+ */
+function drugen_criauser($prefixo,$sufixo,$senha,$dominio,$papel) {
+  //drupal_set_message('o papel é '.$papel);
+  $account = new stdClass;
+  $account->is_new = TRUE;
+  $account->name = $prefixo.$sufixo;
+  //$account->name = $prefixo;
+  $account->pass = user_hash_password($senha);
+  if ($papel){
+    $account->roles = $papel;  
+  }  
+  $account->mail = $prefixo.$sufixo.'@'.$dominio;
+  $account->init = $prefixo.$sufixo.'@'.$dominio;
+  $account->status = TRUE;
+  $account->roles = array(DRUPAL_AUTHENTICATED_RID => TRUE);
+  $account->timezone = variable_get('date_default_timezone', '');
+  $drugen_user = user_save($account);    
+  return $drugen_user;
+}
+/**
+ * Custom drugen function
+ *
+ * Recebe o tamanho e cria senhas.
+ *
+ */
+function drugen_randomPassword($tamanho) {    
+    $alphabet = "0123456789";
+    $pass = array(); //remember to declare $pass as an array
+    for ($i = 0; $i < $tamanho; $i++) {
+        $n = rand(0, strlen($alphabet)-1); //use strlen instead of count
+        $pass[$i] = $alphabet[$n];
+    }
+    return implode($pass); //turn the array into a string
+}
+/**
+ * Custom drugen function
+ *
+ * Given a role description, gets corresponding rid
+ *
+ * @param string $nid
+ *   description
+ *
+ * @return array
+ *   An associative array containing:
+ *     rid
+ */
+function drugen_getrid($role_description) {
+  $query_drugen_getrid = db_select('role', 'r');
+  $result_drugen_getrid = $query_drugen_getrid
+    ->fields('r', array('name', 'rid'))
+    ->condition('r.name', $role_description, '=')
+    ->execute()
+    ->fetchAssoc();
+  return $result_drugen_getrid;
+}
+/**
+ * Custom drugen function
+ *
+ * Given an user name, gets corresponding uid 
+ */
+function drugen_getuid($name) {
+  $query_drugen_getuid = db_select('users', 'u');
+  $result_drugen_getuid = $query_drugen_getuid    
+    ->fields('u', array('uid'))
+    ->condition('u.name', $name, '=')
+    ->execute()
+    ->fetchAssoc();
+  return $result_drugen_getuid;
+}
+/**
+ * Custom drugen function
+ *
+ * Checks the existence of a nid
+ */
+function drugen_checknid($nid) {
+  if ($nid){
+  $query_drugen_checknid = db_select('node', 'n');
+  $result_drugen_checknid = $query_drugen_checknid    
+    ->fields('n', array('nid'))
+    ->condition('n.nid', $nid, '=')
+    ->execute()
+    ->fetchAssoc();
+  return $result_drugen_checknid;
+  }
+}
+
+/**
+ * Custom drugen function
+ *
+ * Acrescenta um membro ao grupo
+ */
+function drugen_addmember($gid,$uid) {
+  $time = time();
+  $drugen_addmember_result =
+    db_insert('og_membership')
+      ->fields(
+        array(
+          'type' => 'og_membership_type_default',
+          'etid' => $uid,
+          'gid' => $gid,
+          'entity_type' => 'user',
+          'group_type' => 'node',
+          'state ' => 1,
+          'created' => $time,
+          'field_name' => 'og_user_node',
+          'language' => 'en'          
+        )
+      )
+    ->execute();
+  return $drugen_addmember_result;       
+}
+
+/**
+ * Implements validation from the Form API.
+ *
+ * @param array $form
+ *   A structured array containing the elements and properties of the form.
+ * @param array $form_state
+ *   An array that stores information about the form's current state
+ *   during processing.
+ */
+function drugen_form_validate($form, &$form_state) {
+  $drugen_grupo = $form_state['values']['drugen_grupoinicial'];
+  if (!drugen_checknid($drugen_grupo) and $drugen_grupo) {
+    form_set_error('drugen_grupoinicial', t('O grupo indicado não existe.'));
+  }
+  $drugen_roledescription = $form_state['values']['drugen_papel'];  
+  if (!drugen_getrid($drugen_roledescription) and $drugen_roledescription) {
+    form_set_error('drugen_papel', t('O papel selecionado não existe.'));
+  }
+  $drugen_gruponome = $form_state['values']['drugen_grupomembro'];
+  if (!drugen_getuid($drugen_gruponome) and $drugen_gruponome) {
+    form_set_error('drugen_grupomembro', t('O usuário indicado para o grupo não existe.'));
+    if (!$form_state['values']['drugen_grupoinicial']){
+      form_set_error('drugen_grupomembro', t('Você precisa indicar o Grupo Inicial para incluir um membro associado.'));
+    }    
+  }  
+  $drugen_nodeinicial = $form_state['values']['drugen_nodeinicial'];
+  if (!drugen_checknid($drugen_nodeinicial) and $drugen_nodeinicial) {
+    form_set_error('drugen_nodeinicial', t('O conteúdo indicado não existe.'));
+  }
+  $drugen_senha = $form_state['values']['drugen_tamanhosenha'];
+  if (!is_numeric($drugen_senha) and $drugen_senha) {
+    form_set_error('drugen_tamanhosenha', t('O tamanho da senha deve ser indicado com um número.'));
+  }  
+}
+/**
+ * Implementation of hook_form_submit().
+ */
+function drugen_form_submit($form, &$form_state) {  
+  if ($form_state['values']['drugen_nodeinicial']){
+    $node_original = node_load($form_state['values']['drugen_nodeinicial']);
+  }  
+  if ($form_state['values']['drugen_grupoinicial']){
+    $node_grupoinicial = node_load($form_state['values']['drugen_grupoinicial']);
+  }
+  if ($form_state['values']['drugen_grupomembro']){
+    $uid_membro = drugen_getuid($form_state['values']['drugen_grupomembro']);          
+  }
+
+   
+  $role = user_role_load_by_name($form_state['values']['drugen_papel']);    
+  $ultimo_uid = drugen_lastuid();
+  $drugen_user_id_inicial = $ultimo_uid['uid']+1;    
+  require './includes/password.inc';  
+  $uid_inicial = drugen_lastuid();  
+
+  for ($i=$uid_inicial['uid']; $i<=$uid_inicial['uid']+$form_state['values']['drugen_numerousuarios']-1; $i++){    
+    
+    if ($form_state['values']['drugen_tamanhosenha']){
+      $senha = drugen_randomPassword($form_state['values']['drugen_tamanhosenha']);
+    }
+    else{
+      $senha = drugen_randomPassword(4);
+    }
+    
+    if ($form_state['values']['drugen_dominio']){
+      $dominio = $form_state['values']['drugen_dominio'];      
+    }
+    else{
+      $dominio = 'coletivo28.org';
+    }
+    
+    if ($form_state['values']['drugen_prefixo']){
+      $prefixo = $form_state['values']['drugen_prefixo'];      
+    }
+    else{
+      $prefixo = 'usuario';
+    }    
+    
+    $user_criado = drugen_criauser(
+      $prefixo,
+      $i + 1,
+      $senha,
+      $dominio,
+      $form_state['values']['drugen_papel']
+    );    
+  
+    if ($user_criado){
+      $uid_externo = $i + 1;
+      if ($role) {
+        user_multiple_role_edit(array($uid_externo), 'add_role', $role->rid);
+      }
+      drupal_set_message($prefixo.$uid_externo.','.$senha);
+    }
+    else{
+      drupal_set_message('Falha na criação de usuário');
+    }    
+
+    if ($form_state['values']['drugen_nodeinicial']){      
+      $reultado_novonode = drugen_replica($node_original,$uid_externo);
+      if (!$reultado_novonode){
+        drupal_set_message('Falha na criação do conteúdo inicial');
+      }
+    }    
+    if ($form_state['values']['drugen_grupoinicial']){      
+      $reultado_novogrupo = drugen_replica($node_grupoinicial,$uid_externo);
+      if (!$reultado_novogrupo){
+        drupal_set_message('Falha na criação do grupo inicial');
+      }
+      else{
+        $node_grupo = node_load($reultado_novogrupo);                
+        if ($form_state['values']['drugen_grupomembro']){
+          //$uid = drugen_getuid($form_state['values']['drugen_grupomembro']);          
+          $membro = drugen_addmember($node_grupo->nid,$uid_membro['uid']);
+          if (!$membro){
+            drupal_set_message('Falha na iclusão de membro ao grupo inicial');
+          }
+        }
+      }
+    }
+  }   
+}

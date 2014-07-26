@@ -1,0 +1,7 @@
+drugen.drugen:
+    path: '/admin/config/system/drugen'
+	defaults:
+		_form: '\Drupal\drugen\Form\DrugenForm'
+		_title: Drugen
+	requirements:
+		_permission: 'administer site configuration'
