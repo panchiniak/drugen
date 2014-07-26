@@ -101,7 +101,7 @@ class DrugenForm extends ConfigFormBase
             $this->setFormError('drugen_size_password', $form_state, $this->t('This is not a number in Password\'s size.'));
         }
     }
-    
+
     /**
      * {@inheritdoc}
      */
@@ -124,8 +124,22 @@ class DrugenForm extends ConfigFormBase
           ->sort("uid", "desc")
           ->range(0,1)
           ->execute();
-            
+
       return $last_user;
+    }
+
+    /**
+     * Create random string to password
+     * @param  integer $length Password length
+     * @return string          Random password
+     */
+    private function generateRandomString($length = 10) {
+        $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $randomString = '';
+        for ($i = 0; $i < $length; $i++) {
+            $randomString .= $characters[rand(0, strlen($characters) - 1)];
+        }
+        return $randomString;
     }
 
 }
