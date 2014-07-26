@@ -101,40 +101,23 @@ class DrugenForm extends ConfigFormBase
         }
     }
     
-    
-//    public function submitForm(array &$form, array &$form_state) {
-//  drupal_set_message($this->t('Your phone number is @number', array('@number' => $form_state['values']['phone_number'])));
-//}
-    
     /**
      * {@inheritdoc}
      */
-    public function submitForm(array &$form, array &$form_state) {
-        //drupal_set_message($this->t('Teste'));   
-        //drupal_set_message(t('my darling'));
+    public function submitForm(array &$form, array &$form_state)
+    {
         $lastId = $this->getLastUid();
-        //var_dump($lastId);
-        //drupal_set_message($this->t('Ultimo usuario' . $lastId));
         $user_quantity = $form_state['values']['drugen_user_quantity'];
         
         $prefix = 'User';
-        if (!empty($form_state['values']['drugen_prefix'])){
+        if (!empty($form_state['values']['drugen_prefix'])) {
             $prefix = $form_state['values']['drugen_prefix'];
         }
         
-        //$prefix = !empty($form_state['values']['drugen_prefix']) ? $form_state['values']['drugen_prefix'] : 'User';
-        
-        //drupal_set_message($this->t('prefixo ' . $prefix));
-        
-        //drupal_set_message(print_r ($form_state['values']['drugen_role'], true));
         for ($i=1; $i <= $user_quantity; $i++) {
           
             $userName = $prefix . ($lastId + $i);
-            //drupal_set_message($userName);
-            
             $password = user_password($form_state['values']['drugen_password_length']);
-            
-            
             
             $user = entity_create('user', array(
               'name' => $userName,
@@ -143,15 +126,17 @@ class DrugenForm extends ConfigFormBase
               'pass' => $password,
               'status' => 1,
             ));
-            foreach($form_state['values']['drugen_role'] as $drugen_role){
+
+            foreach ($form_state['values']['drugen_role'] as $drugen_role) {
                 $user->addRole($drugen_role);
             }
             
             $user->save();
+            
             $generatedUsers .= $userName . ' | ' . $password . '<br>';
         }
+
         drupal_set_message($this->t('Generated users:<br>' . $generatedUsers));
-        
     }
 
 
@@ -165,8 +150,6 @@ class DrugenForm extends ConfigFormBase
             ->sort("uid", "desc")
             ->range(0, 1)
             ->execute();
-        
-        
         
         return array_shift($last_user);
     }
