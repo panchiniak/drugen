@@ -26,6 +26,8 @@ class DrugenForm extends ConfigFormBase
     public function buildForm(array $form, array &$form_state)
     {
 
+        $this->getLastUid();
+        
         $roles = entity_load_multiple('user_role');
         $roles_options = array();
         foreach ($roles as $role_id => $role_obj) {
@@ -99,7 +101,7 @@ class DrugenForm extends ConfigFormBase
             $this->setFormError('drugen_size_password', $form_state, $this->t('This is not a number in Password\'s size.'));
         }
     }
-
+    
     /**
      * {@inheritdoc}
      */
@@ -110,4 +112,20 @@ class DrugenForm extends ConfigFormBase
         //     ->save();
         // parent::submitForm($form, $form_state);
     }
+
+
+    /**
+     * {@inheritdoc}
+     * Gets the last uid. @TODO: refactor this comment.
+     */
+    private function getLastUid()
+    {
+      $last_user = \Drupal::entityQuery('user')
+          ->sort("uid", "desc")
+          ->range(0,1)
+          ->execute();
+            
+      return $last_user;
+    }
+
 }
