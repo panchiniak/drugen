@@ -63,9 +63,9 @@ class DrugenForm extends ConfigFormBase
             '#multiple' => true,
         );
 
-        $form['drugen_size_password'] = array(
+        $form['drugen_password_length'] = array(
             '#type' => 'textfield',
-            '#title' => t("Password's size"),
+            '#title' => t("Password length"),
             '#description' => t('Define password length. Leave it blank for using 4.'),
             '#default_value' => 4,
         );
@@ -85,20 +85,19 @@ class DrugenForm extends ConfigFormBase
     {
         $v = (bool)preg_match('/^\d+$/', $form_state['values']['drugen_user_quantity']);
 
-        if ($v == FALSE ) {
+        if ($v == false) {
             $this->setFormError('drugen_user_quantity', $form_state, $this->t('This is not a number in User quantity.'));
         }
 
-        if ($form_state['values']['drugen_size_password'] == '')
-        {
-            $form_state['values']['drugen_size_password'] = 4;
+        if ($form_state['values']['drugen_password_length'] == '') {
+            $form_state['values']['drugen_password_length'] = 4;
             return;
         }
 
-        $v = (bool)preg_match('/^\d+$/', $form_state['values']['drugen_size_password']);
+        $v = (bool)preg_match('/^\d+$/', $form_state['values']['drugen_password_length']);
 
-        if ($v == FALSE ) {
-            $this->setFormError('drugen_size_password', $form_state, $this->t('This is not a number in Password\'s size.'));
+        if ($v == false) {
+            $this->setFormError('drugen_password_length', $form_state, $this->t('This is not a number in Password\'s size.'));
         }
     }
     
@@ -107,10 +106,22 @@ class DrugenForm extends ConfigFormBase
      */
     public function submitForm(array &$form, array &$form_state)
     {
-        // \Drupal::config('m4032404.settings')
-        //     ->set('m4032404_admin_only', $form_state['values']['m4032404_admin_only'])
-        //     ->save();
-        // parent::submitForm($form, $form_state);
+        drupal_set_message(t('my darling'));
+        /*$lastId = $this->getLastUid();
+        $user_quantity = $form_state['values']['drugen_user_quantity'];
+        $prefix = ($form_state['values']['drugen_prefix']) ? $form_state['values']['drugen_prefix'] : 'User';
+        var_dump($form_state['values']['drugen_role']);exit;
+        for ($i=1; $i <= $user_quantity; $i++) {
+            $userName = $prefix . $lastId + $i;
+            $user = entity_create('user', array(
+              'name' => $userName,
+              'uid' => $lastId + $i,
+              'mail' => $userName . '@' . $form_state['values']['drugen_domain'],
+              'pass' => user_password($form_state['values']['drugen_password_length']),
+              'status' => 1,
+            ));
+            $user->addRole();
+        }*/
     }
 
 
@@ -120,12 +131,11 @@ class DrugenForm extends ConfigFormBase
      */
     private function getLastUid()
     {
-      $last_user = \Drupal::entityQuery('user')
-          ->sort("uid", "desc")
-          ->range(0,1)
-          ->execute();
-            
-      return $last_user;
+        $last_user = \Drupal::entityQuery('user')
+            ->sort("uid", "desc")
+            ->range(0, 1)
+            ->execute();
+              
+        return $last_user;
     }
-
 }
