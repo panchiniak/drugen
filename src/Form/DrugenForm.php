@@ -25,6 +25,13 @@ class DrugenForm extends ConfigFormBase
      */
     public function buildForm(array $form, array &$form_state)
     {
+
+        $roles = entity_load_multiple('user_role');
+        $roles_options = array();
+        foreach ($roles as $role_id => $role_obj) {
+            $roles_options[$role_id] = $role_obj->label;
+        }
+
         $form['drugen_user_quantity'] = array(
             '#type' => 'textfield',
             '#title' => t('User quantity'),
@@ -45,20 +52,11 @@ class DrugenForm extends ConfigFormBase
         );
 
         $form['drugen_role'] = array(
-            '#type' => 'textfield',
+            '#type' => 'select',
             '#title' => t('Role'),
             '#description' => t('Set the role of the users. Leave it blank for using Authenticated user.'),
-        );
-        
-        $form['drugen_role_select'] = array(
-            '#type' => 'select',
-            '#title' => t('Selected'),
-            '#options' => array(
-                0 => t('No'),
-                1 => t('Yes'),
-             ),
+            '#options' => $roles_options,
             '#default_value' => $category['selected'],
-            '#description' => t('Set this to <em>Yes</em> if you would like this category to be selected by default.'),
             '#multiple' => true,
         );
 
