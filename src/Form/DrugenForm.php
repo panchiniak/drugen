@@ -43,6 +43,16 @@ class DrugenForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    */
+  public function validateForm(array &$form, array &$form_state) {
+
+    /*if (strpos($form_state['values']['email'], '.com') === FALSE ) {
+      $this->setFormError('email', $form_state, $this->t('This is not a .com email address.'));
+    } */
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function submitForm(array &$form, array &$form_state) {
     // \Drupal::config('m4032404.settings')
     //   ->set('m4032404_admin_only', $form_state['values']['m4032404_admin_only'])
