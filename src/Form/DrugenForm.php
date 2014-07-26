@@ -44,6 +44,12 @@ class DrugenForm extends ConfigFormBase
             '#description' => t('The mail address will be generated with PrefixUid@domain. Leave it blanck for using PrefixUid@domain.example'),
         );
 
+        $form['drugen_role'] = array(
+            '#type' => 'textfield',
+            '#title' => t('Role'),
+            '#description' => t('Set the role of the users. Leave it blank for using Authenticated user.'),
+        );
+
         $form['drugen_size_password'] = array(
             '#type' => 'textfield',
             '#title' => t("Password's size"),
