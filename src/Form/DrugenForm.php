@@ -114,21 +114,44 @@ class DrugenForm extends ConfigFormBase
         //drupal_set_message(t('my darling'));
         $lastId = $this->getLastUid();
         //var_dump($lastId);
-        drupal_set_message($this->t('Ultimo usuario' . $lastId));
+        //drupal_set_message($this->t('Ultimo usuario' . $lastId));
         $user_quantity = $form_state['values']['drugen_user_quantity'];
-        $prefix = ($form_state['values']['drugen_prefix']) ? $form_state['values']['drugen_prefix'] : 'User';
-        drupal_set_message(print_r ($form_state['values']['drugen_role'], true));
+        
+        $prefix = 'User';
+        if (!empty($form_state['values']['drugen_prefix'])){
+            $prefix = $form_state['values']['drugen_prefix'];
+        }
+        
+        //$prefix = !empty($form_state['values']['drugen_prefix']) ? $form_state['values']['drugen_prefix'] : 'User';
+        
+        //drupal_set_message($this->t('prefixo ' . $prefix));
+        
+        //drupal_set_message(print_r ($form_state['values']['drugen_role'], true));
         for ($i=1; $i <= $user_quantity; $i++) {
-            $userName = $prefix . $lastId + $i;
+          
+            $userName = $prefix . ($lastId + $i);
+            //drupal_set_message($userName);
+            
+            $password = user_password($form_state['values']['drugen_password_length']);
+            
+            
+            
             $user = entity_create('user', array(
               'name' => $userName,
-              'uid' => $lastId + $i,
+              //'uid' => $lastId + $i,
               'mail' => $userName . '@' . $form_state['values']['drugen_domain'],
-              'pass' => user_password($form_state['values']['drugen_password_length']),
+              'pass' => $password,
               'status' => 1,
             ));
-            //$user->addRole();
+            foreach($form_state['values']['drugen_role'] as $drugen_role){
+                $user->addRole($drugen_role);
+            }
+            
+            $user->save();
+            $generatedUsers .= $userName . ' | ' . $password . '<br>';
         }
+        drupal_set_message($this->t('Generated users:<br>' . $generatedUsers));
+        
     }
 
 
