@@ -2,10 +2,10 @@
 
 /**
  * @file
- * Contains \Drupal\drugen\Form\DrugenForm.
+ * Contains \Drupal\m4032404\Form\m4032404Form.
  */
 
-namespace \Drupal\drugen\Form;
+namespace Drupal\drugen\Form;
 
 use Drupal\Core\Form\ConfigFormBase;
 
